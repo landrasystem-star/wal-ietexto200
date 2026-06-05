@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Walkie Talkie - MONCHO y LUCI (Servidor Propio)</title>
+    <style>
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0f, #1a1a2e);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .container {
+            max-width: 650px;
+            width: 100%;
+        }
+        .walkie {
+            background: #2c2c3e;
+            border-radius: 45px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,.5);
+        }
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #2ed573;
+            font-size: .9rem;
+            margin-bottom: 20px;
+        }
+        .selector-panel {
+            background: #0a0a0f;
+            border-radius: 18px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .selector-title {
+            color: #888;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .user-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .user-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #2ed573;
+            background: transparent;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .user-btn.selected {
+            background: #2ed573;
+            color: #0a0a0f;
+            box-shadow: 0 0 15px #2ed573;
+        }
+        .user-btn:active {
+            transform: scale(0.97);
+        }
+        .ids-panel {
+            background: #0a0a0f;
+            border-radius: 18px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .id-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .id-label {
+            color: #888;
+            font-size: 1rem;
+        }
+        .id-value {
+            color: #2ed573;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 1.2rem;
+            word-break: break-all;
+            text-align: right;
+        }
+        .walkies {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .walkie-card {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            background: #1e1e2a;
+            border-radius: 25px;
+            border: 2px solid transparent;
+            transition: all .2s;
+        }
+        .walkie-card.selected {
+            border-color: #2ed573;
+            background: #2ed57322;
+        }
+        .walkie-num {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        .walkie-status {
+            font-size: .75rem;
+            margin-top: 6px;
+        }
+        .walkie-id-peque {
+            font-size: .85rem;
+            color: #2ed573;
+            margin-top: 6px;
+            font-weight: bold;
+            word-break: break-all;
+        }
+        .botonera {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .botonera button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            font-size: 1rem;
+        }
+        .botonera button:active {
+            transform: scale(.97);
+        }
+        .modo {
+            background: #2ed573;
+        }
+        .limpiar {
+            background: #e74c3c;
+        }
+        .llamar {
+            background: #9b59b6;
+        }
+        .manos-libres {
+            background: #3498db;
+        }
+        .manos-libres.activo {
+            background: #2ed573;
+            box-shadow: 0 0 10px #2ed573;
+        }
+        .auto-status {
+            background: #1e1e2a;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: .9rem;
+            text-align: center;
+        }
+        .auto-status span {
+            color: #2ed573;
+            font-weight: bold;
+        }
+        .ptt-btn {
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            background: radial-gradient(#34495e, #2c3e50);
+            border: 5px solid #ecf0f1;
+            cursor: pointer;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            transition: transform 0.05s linear;
+        }
+        .ptt-btn:active {
+            transform: scale(.96);
+        }
+        .ptt-btn.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .estado {
+            text-align: center;
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 12px;
+            font-size: .9rem;
+        }
+        .verde {
+            background: #2ed57322;
+            color: #2ed573;
+        }
+        .rojo {
+            background: #ff475722;
+            color: #ff4757;
+        }
+        .amarillo {
+            background: #ffa50222;
+            color: #ffa502;
+        }
+        .info {
+            font-size: .8rem;
+            color: #888;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2ed573;
+            color: #0a0a0f;
+            padding: 10px 20px;
+            border-radius: 35px;
+            font-size: .9rem;
+            z-index: 1000;
+            font-weight: bold;
+            white-space: normal;
+            text-align: center;
+            pointer-events: none;
+        }
+        .chat-area {
+            margin-top: 20px;
+            border-top: 1px solid #2c2c3e;
+            padding-top: 15px;
+        }
+        .chat-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .chat-header button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all .2s;
+            font-size: .9rem;
+        }
+        .btn-voz-activo {
+            background: #2ed573;
+            color: white;
+        }
+        .btn-texto-activo {
+            background: #ffa502;
+            color: white;
+        }
+        .chat-mensajes {
+            background: #0a0a0f;
+            border-radius: 18px;
+            padding: 12px;
+            height: 160px;
+            overflow-y: auto;
+            font-size: .9rem;
+        }
+        .mensaje-propio {
+            text-align: right;
+            margin: 8px 0;
+            color: #2ed573;
+        }
+        .mensaje-otro {
+            text-align: left;
+            margin: 8px 0;
+            color: #ffa502;
+        }
+        .mensaje-nombre {
+            font-weight: bold;
+            font-size: .8rem;
+        }
+        .input-texto {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .input-texto input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 25px;
+            border: none;
+            background: #1e1e2a;
+            color: white;
+            font-size: 1rem;
+        }
+        .input-texto input:focus {
+            outline: none;
+            border: 1px solid #2ed573;
+        }
+        .input-texto button {
+            background: #2ed573;
+            border: none;
+            border-radius: 25px;
+            padding: 0 20px;
+            color: #0a0a0f;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .countdown-timer {
+            font-family: monospace;
+            font-size: 1rem;
+            background: #0a0a0f;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 6px;
+        }
+        .conexion-info {
+            background: #0a0a0f;
+            border-radius: 12px;
+            padding: 10px;
+            margin-top: 12px;
+            font-size: .8rem;
+            text-align: center;
+            color: #2ed573;
+        }
+        .keep-alive-badge {
+            background: #2ed57333;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            display: inline-block;
+            margin-top: 8px;
+            color: #2ed573;
+        }
+        @media (max-width: 480px) {
+            .walkie { padding: 18px; }
+            .ptt-btn { width: 140px; height: 140px; font-size: 1rem; }
+            .botonera button { padding: 10px; font-size: .9rem; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="walkie">
+        <h1>📞 WALKIE <span style="color:#2ed573">MONCHO ↔ LUCI</span></h1>
+        <div class="subtitle">🌍 Conéctate desde cualquier red</div>
+
+        <div class="selector-panel">
+            <div class="selector-title">🎭 ELIGE TU IDENTIDAD:</div>
+            <div class="user-buttons">
+                <button id="selectUser1" class="user-btn">👤 MONCHO</button>
+                <button id="selectUser2" class="user-btn">👥 LUCI</button>
+            </div>
+        </div>
+
+        <div class="ids-panel">
+            <div class="id-row"><span class="id-label">🎭 Mi ID (compartir):</span><span class="id-value" id="miIdPropio">---</span></div>
+            <div class="id-row"><span class="id-label">👥 ID del amigo:</span><span class="id-value" id="otroIdPropio">---</span></div>
+        </div>
+
+        <div class="auto-status">
+            🔄 Mantenimiento automático: <span id="autoStatusText">ACTIVO</span><br>
+            ⏱️ Reinicio automático en: <span id="countdownTimer">--:--</span>
+            <div class="keep-alive-badge" id="keepAliveStatus">🎵 Mantenimiento activo: ON</div>
+        </div>
+
+        <div class="walkies">
+            <div class="walkie-card selected" id="cardMi"><div class="walkie-num">🎭 YO</div><div class="walkie-status" id="statusMi">Esperando...</div><div class="walkie-id-peque" id="miIdPeque">---</div></div>
+            <div class="walkie-card" id="cardOtro"><div class="walkie-num">👥 OTRO</div><div class="walkie-status" id="statusOtro">Esperando...</div><div class="walkie-id-peque" id="otroIdPeque">---</div></div>
+        </div>
+
+        <div class="botonera">
+            <button id="modoBtn" class="modo">📻 MODO PTT</button>
+            <button id="limpiarBtn" class="limpiar">🧹 LIMPIAR MANUAL</button>
+            <button id="llamarBtn" class="llamar">📞 LLAMAR</button>
+            <button id="manosLibresBtn" class="manos-libres">🔊 MANOS LIBRES</button>
+        </div>
+
+        <div id="ptt" class="ptt-btn disabled">🎧<br>SELECCIONA<br>TU ID</div>
+
+        <div class="chat-area">
+            <div class="chat-header">
+                <button id="btnVoz" class="btn-voz-activo">🎤 MODO VOZ</button>
+                <button id="btnTexto">💬 MODO TEXTO</button>
+            </div>
+            <div id="panelChat" style="display: none;">
+                <div class="chat-mensajes" id="chatMensajes"><div style="color:#888;text-align:center;">💬 Los mensajes aparecerán aquí</div></div>
+                <div class="input-texto"><input type="text" id="mensajeInput" placeholder="Escribe un mensaje..." autocomplete="off"><button id="enviarBtn">📨 ENVIAR</button></div>
+            </div>
+        </div>
+
+        <div id="estado" class="estado rojo">⚡ Selecciona MONCHO o LUCI para empezar</div>
+        
+        <div class="conexion-info" id="conexionInfo">
+            🌐 Usando servidor propio en Render - Listo para conectar desde cualquier red
+        </div>
+        
+        <div class="info">
+            💡 <strong>Conexión externa:</strong> Elige MONCHO o LUCI - La otra persona debe elegir el opuesto<br>
+            📌 Usando servidor propio (PeerJS) + TURN servers mejorados para máxima compatibilidad<br>
+            🔊 <strong>Sonido automático:</strong> Cuando envías un mensaje, suena "sonido.wav" en el otro dispositivo<br>
+            📞 <strong>Notón de llamada:</strong> Botón "LLAMAR" reproduce "sonido2.wav" en el otro dispositivo<br>
+            🔥 <strong>Manos libres:</strong> Activa el micrófono continuo (hablas sin presionar PTT)
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+    (function(){
+        // ============ CONFIGURACIÓN CON TU SERVIDOR PROPIO EN RENDER ============
+        const ICE_SERVERS = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' },
+                { urls: 'stun:stun.cloudflare.com:3478' },
+                { urls: 'stun:stun.relay.metered.ca:80' },
+                {
+                    urls: 'turn:freeturn.net:3478',
+                    username: 'free',
+                    credential: 'free'
+                },
+                {
+                    urls: 'turn:freeturn.net:5349',
+                    username: 'free',
+                    credential: 'free'
+                },
+                {
+                    urls: 'turn:turn.anyfirewall.com:443?transport=tcp',
+                    username: 'anyfirewall',
+                    credential: 'anyfirewall'
+                },
+                {
+                    urls: 'turn:openrelay.metered.ca:80',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                }
+            ],
+            iceCandidatePoolSize: 10,
+            iceTransportPolicy: 'all'
+        };
+        
+        // ⚠️ ¡AQUÍ ESTÁ TU URL DE RENDER! Sustituye por la tuya si cambia
+        const PEER_CONFIG = {
+            host: 'peerjs-server-1-ua09.onrender.com',  // ← TU SERVIDOR EN RENDER
+            port: 443,
+            secure: true,
+            config: ICE_SERVERS,
+            debug: 2
+        };
+        
+        // IDs fijos
+        const USER1_ID = "moncho";
+        const USER2_ID = "luci";
+        
+        // ============ VARIABLES GLOBALES ============
+        let miId = "", idDestino = "", peer = null, stream = null, llamada = null, audio = null;
+        let conectado = false, hablando = false;
+        let dataConnection = null;
+        let modoActual = "voz";
+        let cambioAutomaticoHabilitado = true;
+        let manosLibresActivo = false;
+        let intervaloInactividad = null;
+        let segundosParaReconexion = 90;
+        let ultimaActividad = Date.now();
+        let autoMantenimientoActivo = true;
+        let reconexionProgramada = false;
+        let reconectando = false;
+        let reintentosConexion = 0;
+        let maxReintentos = 5;
+        
+        let ghostAudioContext = null;
+        let ghostInterval = null;
+        let keepAliveActive = false;
+        let silentOscillator = null;
+        
+        // ============ SONIDO FANTASMA ============
+        async function iniciarSonidoFantasma() {
+            if (keepAliveActive) return;
+            try {
+                if (!ghostAudioContext) {
+                    ghostAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (ghostAudioContext.state === 'suspended') {
+                    await ghostAudioContext.resume();
+                }
+                const oscillator = ghostAudioContext.createOscillator();
+                const gain = ghostAudioContext.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 19000;
+                gain.gain.value = 0.001;
+                oscillator.connect(gain);
+                gain.connect(ghostAudioContext.destination);
+                oscillator.start();
+                silentOscillator = oscillator;
+                ghostInterval = setInterval(() => {
+                    if (ghostAudioContext && keepAliveActive) {
+                        try {
+                            if (ghostAudioContext.state === 'suspended') ghostAudioContext.resume();
+                            const shortBeep = ghostAudioContext.createOscillator();
+                            const beepGain = ghostAudioContext.createGain();
+                            shortBeep.type = 'sine';
+                            shortBeep.frequency.value = 18000;
+                            beepGain.gain.value = 0.0005;
+                            shortBeep.connect(beepGain);
+                            beepGain.connect(ghostAudioContext.destination);
+                            shortBeep.start();
+                            shortBeep.stop(ghostAudioContext.currentTime + 0.05);
+                        } catch(e) {}
+                    }
+                }, 15000);
+                keepAliveActive = true;
+                const keepAliveSpan = document.getElementById('keepAliveStatus');
+                if (keepAliveSpan) keepAliveSpan.innerHTML = '🎵 Mantenimiento activo: ON';
+            } catch(e) {
+                console.log("Sonido fantasma no disponible");
+            }
+        }
+        
+        function detenerSonidoFantasma() {
+            if (ghostInterval) { clearInterval(ghostInterval); ghostInterval = null; }
+            if (silentOscillator) { try { silentOscillator.stop(); } catch(e) {} silentOscillator = null; }
+            keepAliveActive = false;
+        }
+        
+        function reproducirSonidoLocal() {
+            try {
+                const audioElement = new Audio('sonido.wav');
+                audioElement.volume = 1.0;
+                audioElement.play().catch(e => console.log("Audio no disponible"));
+            } catch(e) {}
+        }
+        
+        function reproducirSonidoLlamada() {
+            try {
+                const audioElement = new Audio('sonido2.wav');
+                audioElement.volume = 1.0;
+                audioElement.play().catch(e => console.log("Audio no disponible"));
+            } catch(e) {}
+        }
+        
+        // ============ FUNCIONES UTILITY ============
+        function mostrarToast(msg) { 
+            let toast = document.createElement('div'); 
+            toast.className = 'toast'; 
+            toast.textContent = msg; 
+            document.body.appendChild(toast); 
+            setTimeout(() => toast.remove(), 3000); 
+        }
+        
+        function registrarActividad() {
+            ultimaActividad = Date.now();
+            reconexionProgramada = false;
+            const autoSpan = document.getElementById('autoStatusText');
+            if(autoSpan) autoSpan.innerHTML = 'ACTIVO';
+        }
+        
+        // ============ MANOS LIBRES ============
+        function toggleManosLibres() {
+            manosLibresActivo = !manosLibresActivo;
+            const btn = document.getElementById('manosLibresBtn');
+            const pttDiv = document.getElementById('ptt');
+            if (manosLibresActivo) {
+                btn.classList.add('activo');
+                btn.innerHTML = '🎙️ MANOS LIBRES ON';
+                mostrarToast("🎙️ MANOS LIBRES ACTIVADO");
+                if (pttDiv) { pttDiv.style.opacity = '0.5'; pttDiv.style.pointerEvents = 'none'; }
+                if (llamada && stream) stream.getAudioTracks().forEach(t => t.enabled = true);
+                else if (conectado && idDestino) iniciarLlamada().then(() => { if(stream) stream.getAudioTracks().forEach(t => t.enabled = true); });
+            } else {
+                btn.classList.remove('activo');
+                btn.innerHTML = '🔊 MANOS LIBRES';
+                mostrarToast("🔊 MANOS LIBRES DESACTIVADO");
+                if (pttDiv) { pttDiv.style.opacity = '1'; pttDiv.style.pointerEvents = 'auto'; pttDiv.style.background = 'radial-gradient(#34495e,#2c3e50)'; pttDiv.innerHTML = '🎤<br>MANTÉN PTT'; }
+                if (llamada && hablando) detenerLlamada();
+                hablando = false;
+            }
+            registrarActividad();
+        }
+        
+        function enviarLlamada() {
+            if (!idDestino) { mostrarToast('⚠️ Selecciona MONCHO o LUCI primero'); return; }
+            if (!conectado) { mostrarToast('⚠️ Espera a estar conectado'); return; }
+            registrarActividad();
+            if (dataConnection && dataConnection.open) {
+                dataConnection.send({ type: 'llamada', desde: miId });
+                reproducirSonidoLlamada();
+                mostrarToast(`📞 Notón enviado a ${idDestino}`);
+            } else {
+                mostrarToast('🔄 Estableciendo canal...');
+                setTimeout(() => {
+                    if (dataConnection && dataConnection.open) {
+                        dataConnection.send({ type: 'llamada', desde: miId });
+                        reproducirSonidoLlamada();
+                        mostrarToast(`📞 Notón enviado a ${idDestino}`);
+                    } else mostrarToast('❌ No se pudo enviar');
+                }, 1500);
+            }
+        }
+        
+        // ============ MODOS VOZ/TEXTO ============
+        function cambiarATextoAutomatico(origen) {
+            if (!cambioAutomaticoHabilitado || modoActual === "texto") return;
+            cambioAutomaticoHabilitado = false;
+            modoActual = "texto";
+            document.getElementById('btnVoz').style.background = '#1e1e2a';
+            document.getElementById('btnTexto').style.background = '#ffa502';
+            document.getElementById('ptt').style.display = 'none';
+            document.getElementById('panelChat').style.display = 'block';
+            mostrarToast(`📱 Mensaje de ${origen} - Cambiando a modo texto`);
+            if (hablando && !manosLibresActivo) detenerLlamada();
+            setTimeout(() => { cambioAutomaticoHabilitado = true; }, 500);
+            registrarActividad();
+        }
+        
+        function cambiarAVozManual() {
+            if (modoActual === "voz") return;
+            modoActual = "voz";
+            document.getElementById('btnVoz').style.background = '#2ed573';
+            document.getElementById('btnTexto').style.background = '#1e1e2a';
+            document.getElementById('ptt').style.display = 'flex';
+            document.getElementById('panelChat').style.display = 'none';
+            mostrarToast(`🎤 Cambiado a modo voz`);
+            registrarActividad();
+        }
+        
+        // ============ AUDIO Y LLAMADA ============
+        async function iniciarLlamada() {
+            if(!peer || !idDestino) return false;
+            if(!stream) {
+                try { 
+                    stream = await navigator.mediaDevices.getUserMedia({ audio: true }); 
+                    stream.getAudioTracks().forEach(t => t.enabled = false); 
+                } catch(e) { 
+                    mostrarToast('🎤 Permite el micrófono para usar voz'); 
+                    return false; 
+                }
+            }
+            if(llamada) try { llamada.close(); } catch(e) {}
+            try {
+                llamada = peer.call(idDestino, stream);
+                llamada.on('error', (err) => console.error("Error en llamada:", err));
+                registrarActividad();
+                return true;
+            } catch(e) { return false; }
+        }
+        
+        function detenerLlamada() { 
+            if(stream) stream.getAudioTracks().forEach(t => t.enabled = false); 
+            if(llamada) { try { llamada.close(); } catch(e) {} llamada = null; } 
+        }
+        
+        // ============ MENSAJERÍA ============
+        function agregarMensajeChat(remitente, texto, esMio = false) {
+            registrarActividad();
+            if (!esMio && cambioAutomaticoHabilitado && modoActual !== "texto") cambiarATextoAutomatico(remitente);
+            const chatDiv = document.getElementById('chatMensajes');
+            if(!chatDiv) return;
+            if(chatDiv.children.length === 1 && chatDiv.children[0].innerText.includes("Los mensajes aparecerán aquí")) chatDiv.innerHTML = "";
+            const msgDiv = document.createElement('div');
+            msgDiv.className = esMio ? 'mensaje-propio' : 'mensaje-otro';
+            msgDiv.innerHTML = `<div class="mensaje-nombre">${remitente}:</div><div>${texto}</div>`;
+            chatDiv.appendChild(msgDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+        
+        function enviarMensajeTexto() {
+            const input = document.getElementById('mensajeInput');
+            const texto = input.value.trim();
+            if(!texto) { mostrarToast('📝 Escribe un mensaje'); return; }
+            if(!idDestino) { mostrarToast('⚠️ Selecciona MONCHO o LUCI primero'); return; }
+            registrarActividad();
+            if (modoActual !== "texto") cambiarATextoAutomatico("Yo");
+            if (dataConnection && dataConnection.open) {
+                dataConnection.send({ type: 'texto', desde: miId, texto: texto });
+                dataConnection.send({ type: 'sonido', desde: miId });
+                agregarMensajeChat(miId, texto, true);
+                input.value = '';
+                mostrarToast(`📨 Enviado a ${idDestino}`);
+            } else {
+                mostrarToast('🔄 Estableciendo canal...');
+                setTimeout(() => {
+                    if (dataConnection && dataConnection.open) {
+                        dataConnection.send({ type: 'texto', desde: miId, texto: texto });
+                        dataConnection.send({ type: 'sonido', desde: miId });
+                        agregarMensajeChat(miId, texto, true);
+                        input.value = '';
+                        mostrarToast(`📨 Enviado a ${idDestino}`);
+                    } else mostrarToast('❌ Canal no disponible');
+                }, 1500);
+            }
+        }
+        
+        function establecerConexionDatos() {
+            if (!peer || !idDestino) return;
+            if (dataConnection && dataConnection.open) return;
+            if (dataConnection && dataConnection.peer === idDestino) { try { dataConnection.close(); } catch(e) {} dataConnection = null; }
+            try {
+                dataConnection = peer.connect(idDestino, { reliable: true, serialization: 'json' });
+                dataConnection.on('open', () => { console.log('DataConnection abierta'); mostrarToast('📡 Canal de mensajes listo'); dataConnection.send({ type: 'handshake', desde: miId }); registrarActividad(); });
+                dataConnection.on('data', (data) => {
+                    if (data.type === 'texto') { agregarMensajeChat(data.desde, data.texto, false); mostrarToast(`📨 Mensaje de ${data.desde}`); registrarActividad(); }
+                    else if (data.type === 'sonido') { reproducirSonidoLocal(); registrarActividad(); }
+                    else if (data.type === 'llamada') { mostrarToast(`📞 ${data.desde} te está llamando!`); reproducirSonidoLlamada(); registrarActividad(); }
+                });
+                dataConnection.on('close', () => { dataConnection = null; setTimeout(() => establecerConexionDatos(), 3000); });
+            } catch(e) { setTimeout(() => establecerConexionDatos(), 3000); }
+        }
+        
+        // ============ CONEXIÓN PEER ============
+        function actualizarUI() {
+            document.getElementById('miIdPropio').innerText = miId || "❌";
+            document.getElementById('otroIdPropio').innerText = idDestino || "❌";
+            document.getElementById('miIdPeque').innerText = miId || "---";
+            document.getElementById('otroIdPeque').innerText = idDestino || "---";
+            document.getElementById('statusMi').innerHTML = conectado ? '🟢 Conectado' : '🟡 Conectando...';
+            document.getElementById('statusOtro').innerHTML = idDestino ? `🎯 ${idDestino}` : 'Esperando...';
+            const btn1 = document.getElementById('selectUser1');
+            const btn2 = document.getElementById('selectUser2');
+            if(btn1 && btn2) {
+                if(miId === USER1_ID) { btn1.classList.add('selected'); btn2.classList.remove('selected'); }
+                else if(miId === USER2_ID) { btn2.classList.add('selected'); btn1.classList.remove('selected'); }
+                else { btn1.classList.remove('selected'); btn2.classList.remove('selected'); }
+            }
+        }
+        
+        function conectarPeer(miID, otroID) {
+            if(reconectando) return;
+            reconectando = true;
+            if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
+            miId = miID; idDestino = otroID; conectado = false; hablando = false;
+            actualizarUI();
+            mostrarToast(`🔌 Conectando como "${miId}"...`);
+            document.getElementById('estado').innerHTML = `🔄 Conectando como "${miId}"...`;
+            document.getElementById('estado').className = 'estado amarillo';
+            document.getElementById('ptt').classList.add('disabled');
+            try {
+                peer = new Peer(miId, PEER_CONFIG);
+                peer.on('open', (id) => {
+                    conectado = true; reconectando = false;
+                    document.getElementById('estado').innerHTML = `✅ Conectado como "${miId}"`;
+                    document.getElementById('estado').className = 'estado verde';
+                    document.getElementById('ptt').classList.remove('disabled');
+                    mostrarToast(`✅ Conectado como "${miId}"!`);
+                    actualizarUI();
+                    establecerConexionDatos();
+                    registrarActividad();
+                    document.getElementById('conexionInfo').innerHTML = '✅ Conectado a tu servidor en Render - Listo para recibir llamadas';
+                    iniciarSonidoFantasma();
+                });
+                peer.on('connection', (conn) => {
+                    if (dataConnection) { try { dataConnection.close(); } catch(e) {} }
+                    dataConnection = conn;
+                    dataConnection.on('open', () => { dataConnection.send({ type: 'handshake', desde: miId }); registrarActividad(); mostrarToast(`📡 ${conn.peer} conectado para mensajes`); });
+                    dataConnection.on('data', (data) => {
+                        if (data.type === 'texto') { agregarMensajeChat(data.desde, data.texto, false); mostrarToast(`📨 Mensaje de ${data.desde}`); registrarActividad(); }
+                        else if (data.type === 'sonido') { reproducirSonidoLocal(); registrarActividad(); }
+                        else if (data.type === 'llamada') { mostrarToast(`📞 ${data.desde} te está llamando!`); reproducirSonidoLlamada(); registrarActividad(); }
+                    });
+                });
+                peer.on('call', (call) => {
+                    if (stream) { 
+                        call.answer(stream); 
+                        call.on('stream', (s) => { 
+                            if (audio) { audio.pause(); audio.srcObject = null; } 
+                            audio = new Audio(); audio.srcObject = s; audio.autoplay = true;
+                            mostrarToast(`🎧 Llamada de voz entrante`);
+                        }); 
+                    }
+                });
+                peer.on('error', (err) => {
+                    reconectando = false;
+                    if (err.type === 'unavailable-id') mostrarToast(`❌ ID "${miId}" ya está en uso`);
+                    else mostrarToast(`⚠️ Error: ${err.type || 'conexión'}`);
+                });
+                peer.on('disconnected', () => { conectado = false; mostrarToast('⚠️ Desconectado, reconectando...'); document.getElementById('ptt').classList.add('disabled'); });
+            } catch(e) { reconectando = false; mostrarToast("Error de conexión"); }
+        }
+        
+        function seleccionarUser1() { if(miId === USER1_ID) { mostrarToast("✅ Ya estás usando MONCHO"); return; } detenerSonidoFantasma(); conectarPeer(USER1_ID, USER2_ID); }
+        function seleccionarUser2() { if(miId === USER2_ID) { mostrarToast("✅ Ya estás usando LUCI"); return; } detenerSonidoFantasma(); conectarPeer(USER2_ID, USER1_ID); }
+        function limpiezaTotal() { window.location.reload(); }
+        function toggleModo() { if (modoActual === "voz") cambiarAVozManual(); else { modoActual = "voz"; cambiarAVozManual(); } }
+        
+        function actualizarContador() {
+            const inactivo = (Date.now() - ultimaActividad) / 1000;
+            if (inactivo >= segundosParaReconexion && !reconexionProgramada && conectado) {
+                reconexionProgramada = true;
+                mostrarToast('🔄 Inactividad detectada - Reconectando...');
+                conectarPeer(miId, idDestino);
+            }
+            const segundosRestantes = Math.max(0, Math.ceil(segundosParaReconexion - inactivo));
+            const countdownSpan = document.getElementById('countdownTimer');
+            if(countdownSpan) countdownSpan.innerHTML = `${Math.floor(segundosRestantes/60)}:${(segundosRestantes%60).toString().padStart(2,'0')}`;
+        }
+        
+        function iniciarMonitoreoInactividad() { setInterval(actualizarContador, 1000); }
+        
+        function capturarActividadGlobal() {
+            ['click', 'touchstart', 'mousedown', 'keypress'].forEach(e => document.body.addEventListener(e, registrarActividad, true));
+        }
+        
+        function initEventListeners() {
+            document.getElementById('selectUser1').onclick = seleccionarUser1;
+            document.getElementById('selectUser2').onclick = seleccionarUser2;
+            document.getElementById('modoBtn').onclick = toggleModo;
+            document.getElementById('limpiarBtn').onclick = limpiezaTotal;
+            document.getElementById('enviarBtn').onclick = enviarMensajeTexto;
+            document.getElementById('mensajeInput').onkeypress = (e) => { if (e.key === 'Enter') enviarMensajeTexto(); };
+            document.getElementById('btnVoz').onclick = () => cambiarAVozManual();
+            document.getElementById('btnTexto').onclick = () => { cambiarATextoAutomatico("Manual"); };
+            document.getElementById('llamarBtn').onclick = enviarLlamada;
+            document.getElementById('manosLibresBtn').onclick = toggleManosLibres;
+            
+            const ptt = document.getElementById('ptt');
+            let isPressed = false;
+            const startTalk = async () => {
+                if (manosLibresActivo) return;
+                if (!conectado) { mostrarToast('⚠️ Espera a estar conectado'); return; }
+                if (!hablando && !isPressed) {
+                    isPressed = true;
+                    if(await iniciarLlamada()) {
+                        hablando = true;
+                        ptt.style.background = 'radial-gradient(#ff4757,#c0392b)';
+                        ptt.innerHTML = '🎤<br>HABLANDO';
+                        registrarActividad();
+                    } else isPressed = false;
+                }
+            };
+            const stopTalk = () => {
+                if (manosLibresActivo) return;
+                if (hablando && isPressed) {
+                    detenerLlamada();
+                    hablando = false;
+                    ptt.style.background = 'radial-gradient(#34495e,#2c3e50)';
+                    ptt.innerHTML = '🎤<br>MANTÉN PTT';
+                    registrarActividad();
+                }
+                isPressed = false;
+            };
+            ptt.onmousedown = startTalk; ptt.onmouseup = stopTalk; ptt.onmouseleave = stopTalk;
+            ptt.ontouchstart = (e) => { e.preventDefault(); startTalk(); };
+            ptt.ontouchend = (e) => { e.preventDefault(); stopTalk(); };
+            ptt.ontouchcancel = (e) => { e.preventDefault(); stopTalk(); };
+        }
+        
+        async function init() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getAudioTracks().forEach(t => t.enabled = false);
+            } catch(e) { console.log("Sin micrófono, solo texto"); }
+            initEventListeners();
+            iniciarMonitoreoInactividad();
+            capturarActividadGlobal();
+            registrarActividad();
+        }
+        init();
+    })();
+</script>
+</body>
+</html>
